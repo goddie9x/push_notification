@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">PushNotification</string>
+    <string name="notification_logo">notification logo</string>
+    <string name="select_logo">Select logo</string>
+    <string name="notification_title">Notification title</string>
+    <string name="notification_body">Notification body</string>
+    <string name="push_notification">Push notification</string>
+    <string name="amount_notification">Amount notificaition</string>
+</resources>
