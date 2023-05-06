@@ -6,4 +6,5 @@
     <string name="notification_body">Notification body</string>
     <string name="push_notification">Push notification</string>
     <string name="amount_notification">Amount notificaition</string>
+    <string name="ms">ms</string>
 </resources>
