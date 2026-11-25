@@ -13,4 +13,5 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "PushNotification"
-include ':app'
+include(":shared")
+include(":app")
