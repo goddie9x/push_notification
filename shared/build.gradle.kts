@@ -12,20 +12,6 @@ kotlin {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         }
     }
-    iosArm64 {
-        binaries {
-            framework {
-                baseName = "NotifyPushShared"
-            }
-        }
-    }
-    iosSimulatorArm64 {
-        binaries {
-            framework {
-                baseName = "NotifyPushShared"
-            }
-        }
-    }
     jvm()
 
     sourceSets {
@@ -49,11 +35,6 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation(libs.ktor.client.okhttp)
-            }
-        }
-        val iosMain by getting {
-            dependencies {
-                implementation(libs.ktor.client.darwin)
             }
         }
         val jvmMain by getting {
