@@ -15,35 +15,38 @@ class OtpSkipFilterTest {
             device = "Device",
         )
 
+    private fun filter(settings: AppSettings = AppSettings()): OtpSkipFilter =
+        OtpSkipFilter(settings)
+
     @Test
     fun vietnameseOtpIsSkipped() {
-        assertTrue(OtpSkipFilter.shouldSkip(payload("App", "Ma OTP cua ban la 123456. Khong chia se cho ai.")))
+        assertTrue(filter().shouldSkip(payload("App", "Ma OTP cua ban la 123456. Khong chia se cho ai.")))
     }
 
     @Test
     fun vietnameseVerificationCodeIsSkipped() {
-        assertTrue(OtpSkipFilter.shouldSkip(payload("App", "Ma xac thuc cua ban: 123456")))
+        assertTrue(filter().shouldSkip(payload("App", "Ma xac thuc cua ban: 123456")))
     }
 
     @Test
     fun englishVerificationCodeIsSkipped() {
-        assertTrue(OtpSkipFilter.shouldSkip(payload("App", "Your verification code is 123456")))
+        assertTrue(filter().shouldSkip(payload("App", "Your verification code is 123456")))
     }
 
     @Test
     fun vietnameseConfirmationCodeIsSkipped() {
-        assertTrue(OtpSkipFilter.shouldSkip(payload("App", "Ma xac nhan cua ban: 123456")))
+        assertTrue(filter().shouldSkip(payload("App", "Ma xac nhan cua ban: 123456")))
     }
 
     @Test
     fun bareCodeWithoutOtpMarkerIsNotSkipped() {
-        assertFalse(OtpSkipFilter.shouldSkip(payload("App", "Your code is 123456")))
+        assertFalse(filter().shouldSkip(payload("App", "Your code is 123456")))
     }
 
     @Test
     fun sixDigitReferenceIsNotSkipped() {
         assertFalse(
-            OtpSkipFilter.shouldSkip(
+            filter().shouldSkip(
                 payload("App", "Giao dich thanh cong. Ma tham chieu: 123456"),
             ),
         )
@@ -52,7 +55,7 @@ class OtpSkipFilterTest {
     @Test
     fun balanceChangeIsNotSkipped() {
         assertFalse(
-            OtpSkipFilter.shouldSkip(
+            filter().shouldSkip(
                 payload(
                     "Vietcombank",
                     "TK 1234567890: +500.000 VND luc 10:23 25/11/2026. So du: 12.345.678 VND.",
@@ -63,11 +66,20 @@ class OtpSkipFilterTest {
 
     @Test
     fun customPatternExtendsFilter() {
-        OtpSkipFilter.customPatterns = listOf(Regex("khuyen mai", RegexOption.IGNORE_CASE))
-        try {
-            assertTrue(OtpSkipFilter.shouldSkip(payload("App", "Khuyen mai lon hom nay")))
-        } finally {
-            OtpSkipFilter.customPatterns = emptyList()
-        }
+        val custom = filter(AppSettings(otpCustomPatterns = listOf("khuyen mai")))
+        assertTrue(custom.shouldSkip(payload("App", "Khuyen mai lon hom nay")))
+    }
+
+    @Test
+    fun disabledFilterForwardsOtp() {
+        val off = filter(AppSettings(otpFilterEnabled = false))
+        assertFalse(off.shouldSkip(payload("App", "Ma OTP cua ban la 123456.")))
+    }
+
+    @Test
+    fun invalidCustomPatternIsIgnored() {
+        val custom = filter(AppSettings(otpCustomPatterns = listOf("[unclosed")))
+        assertFalse(custom.shouldSkip(payload("App", "Khuyen mai lon hom nay")))
+        assertTrue(custom.shouldSkip(payload("App", "Ma OTP cua ban la 123456.")))
     }
 }

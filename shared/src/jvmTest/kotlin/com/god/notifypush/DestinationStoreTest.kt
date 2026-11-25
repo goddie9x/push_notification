@@ -1,6 +1,7 @@
 package com.god.notifypush
 
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.Clock
 import java.nio.file.Files
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -33,7 +34,7 @@ class DestinationStoreTest {
                 id = "entry-1",
                 payload = TestPayloadBuilder.sample("Device"),
                 results = listOf(DispatchResult("mail-tool", "Mail Tool", DispatchStatus.DELIVERED, httpCode = 202)),
-                recordedAtEpochMs = 1_000L,
+                recordedAtEpochMs = Clock.System.now().toEpochMilliseconds(),
             ),
         )
         assertEquals(listOf("entry-1"), createHistoryStore(dir).recent().map { it.id })

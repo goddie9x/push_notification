@@ -22,6 +22,14 @@ interface RetryQueue {
     suspend fun markAttempt(id: String, nextRetryAtEpochMs: Long)
 }
 
+fun pendingForAutoRetry(
+    items: List<QueuedDispatch>,
+    settings: AppSettings,
+    nowEpochMs: Long,
+): List<QueuedDispatch> =
+    if (!settings.autoRetryEnabled) emptyList()
+    else items.filter { it.nextRetryAtEpochMs <= nowEpochMs }
+
 fun nextBackoffMs(attempts: Int): Long {
     val delay = 30_000L * (1L shl attempts.coerceIn(0, 10))
     return delay.coerceAtMost(3_600_000L)

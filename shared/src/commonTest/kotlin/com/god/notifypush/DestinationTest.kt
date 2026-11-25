@@ -13,6 +13,11 @@ class DestinationTest {
     )
 
     @Test
+    fun newDestinationDefaultsToDisabled() {
+        assertFalse(destination.enabled)
+    }
+
+    @Test
     fun emptyFilterMatchesAllApps() {
         val open = destination.copy(appsFilter = emptyList())
         assertTrue(open.matches("com.any.app", "Any App"))

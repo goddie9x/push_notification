@@ -9,7 +9,7 @@ data class Destination(
     val url: String,
     val headerName: String = "X-Api-Key",
     val headerValue: String = "",
-    val enabled: Boolean = true,
+    val enabled: Boolean = false,
     val appsFilter: List<String> = emptyList(),
 ) {
     fun matches(bundleId: String, appName: String): Boolean {
