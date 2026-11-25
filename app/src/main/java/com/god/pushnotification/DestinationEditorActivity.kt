@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.text.InputType
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Switch
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -21,6 +22,7 @@ class DestinationEditorActivity : AppCompatActivity() {
     private lateinit var headerNameField: EditText
     private lateinit var headerValueField: EditText
     private lateinit var appsFilterField: EditText
+    private lateinit var enabledSwitch: Switch
 
     private var destinationId: String? = null
     private var existing: Destination? = null
@@ -34,6 +36,7 @@ class DestinationEditorActivity : AppCompatActivity() {
         headerNameField = findViewById(R.id.destination_header_name_field)
         headerValueField = findViewById(R.id.destination_header_value_field)
         appsFilterField = findViewById(R.id.destination_apps_field)
+        enabledSwitch = findViewById(R.id.destination_enabled_switch)
         headerValueField.inputType =
             InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
         findViewById<Button>(R.id.destination_save).setOnClickListener { save() }
@@ -59,6 +62,7 @@ class DestinationEditorActivity : AppCompatActivity() {
         headerNameField.setText(destination.headerName)
         headerValueField.setText(destination.headerValue)
         appsFilterField.setText(DestinationForm.formatAppsFilter(destination.appsFilter))
+        enabledSwitch.isChecked = destination.enabled
     }
 
     private fun save() {
@@ -74,7 +78,7 @@ class DestinationEditorActivity : AppCompatActivity() {
             url = url,
             headerName = headerNameField.text.toString().trim(),
             headerValue = headerValueField.text.toString(),
-            enabled = existing?.enabled ?: true,
+            enabled = enabledSwitch.isChecked,
             appsFilter = DestinationForm.parseAppsFilter(appsFilterField.text.toString())
         )
         lifecycleScope.launch(Dispatchers.IO) {

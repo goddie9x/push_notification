@@ -127,6 +127,26 @@ class NotificationForwarderTest {
     }
 
     @Test
+    fun otpPayloadIsForwardedWhenFilterIsOff() = runTest {
+        val payload = payload("Vietcombank", "Ma OTP cua ban la 123456. Khong chia se cho ai.")
+        val dispatcher = mock<Dispatcher>()
+        whenever(dispatcher.dispatch(any())) doReturn listOf(result(DispatchStatus.DELIVERED))
+        val historyStore = mock<HistoryStore>()
+        val retryQueue = mock<RetryQueue>()
+        val forwarder = NotificationForwarder(
+            ownPackage,
+            dispatcher,
+            historyStore,
+            retryQueue,
+            isOtp = { false },
+        )
+
+        forwarder.forward(payload, "com.vietcombank.vcb")
+
+        verifyBlocking(dispatcher) { dispatch(payload) }
+    }
+
+    @Test
     fun balanceChangeWithLongAccountNumberIsForwarded() = runTest {
         val payload = payload(
             "Vietcombank",

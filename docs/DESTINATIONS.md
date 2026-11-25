@@ -14,15 +14,17 @@ destination lỗi không chặn các destination khác.
       "url": "https://mail.hmt9x.dev/api/ingest/notification",
       "headerName": "X-Api-Key",
       "headerValue": "DAN_KEY_CUA_BAN",
-      "enabled": true,
+      "enabled": false,
       "apps": []
     }
-  ],
-  "skipPatterns": ["otp", "mã otp", "ma otp", "verification code",
-    "security code", "mã xác thực", "ma xac thuc", "mã xác nhận",
-    "ma xac nhan", "mã bảo mật", "ma bao mat"]
+  ]
 }
 ```
+
+> Service mới thêm vào **mặc định TẮT** (`enabled: false`) — phải bật
+> toggle của nó trong màn hình Services thì notification thật mới được
+> gửi tới. Màn hình Services hiện service chưa bật bằng dòng mờ +
+> nhãn **"Chưa bật"**.
 
 ## Bảng field
 
@@ -32,9 +34,8 @@ destination lỗi không chặn các destination khác.
 | `url` | string | Có | URL đầy đủ, gồm scheme `https://`. App POST JSON tới đây. |
 | `headerName` | string | Có (có thể `""`) | Tên header auth, vd `X-Api-Key`, `Authorization`. Để `""` nếu endpoint không cần auth. |
 | `headerValue` | string | Có (có thể `""`) | Giá trị header, vd key API hoặc `Bearer <token>`. **Chỉ lưu trên thiết bị, không commit vào repo.** |
-| `enabled` | boolean | Có | `false` = tắt hẳn, không gửi, không retry. |
-| `apps` | string[] | Có (có thể `[]`) | Lọc theo app nguồn (package name Android / bundle id iOS). Rỗng = nhận từ mọi app. |
-| `skipPatterns` | string[] | Không | Mẫu text (không phân biệt hoa/thường) — notification nào chứa một mẫu thì **không gửi tới bất kỳ destination nào**. Mặc định là danh sách OTP bên dưới. Để trống `[]` = tắt lọc (không khuyến nghị). |
+| `enabled` | boolean | Có | `false` = tắt hẳn, không gửi, không retry. **Mặc định `false` cho service mới thêm.** |
+| `apps` | string[] | Có (có thể `[]`) | Lọc theo app nguồn (package name Android). Rỗng = nhận từ mọi app. |
 
 ### Bộ lọc OTP mặc định (bật sẵn)
 
@@ -47,7 +48,7 @@ destination lỗi không chặn các destination khác.
 Danh sách này khớp với `OtpSkipFilter` trong module shared. Bộ lọc kiểm tra trên
 `rawText` (title + subtitle + body). Chỉ các từ khóa gắn với mã OTP mới bị chặn —
 số 6 chữ số trần (vd mã tham chiếu giao dịch) KHÔNG bị chặn, để không làm mất
-thông báo ngân hàng thật. Tắt/bật và sửa danh sách trong màn hình Services — xem [docs/PRIVACY.md](PRIVACY.md).
+thông báo ngân hàng thật. Tắt/bật và thêm mẫu tự tạo trong màn hình **Cài đặt** — xem [docs/PRIVACY.md](PRIVACY.md).
 
 ## Ngữ nghĩa gửi / retry
 
@@ -56,16 +57,17 @@ thông báo ngân hàng thật. Tắt/bật và sửa danh sách trong màn hìn
 | `2xx` | Đã gửi xong. |
 | `422` | Đã gửi xong — server đã nhận nhưng không parse được format. **Không retry** (gửi lại cũng 422). |
 | `401` / `403` | **Lỗi cấu hình**, không retry tự động. Kiểm tra lại key trong `headerValue`. |
-| `404`, `5xx`, timeout, mất mạng | Chưa gửi xong → đưa vào hàng chờ retry riêng của destination đó (backoff lũy thừa; Android: WorkManager, iOS: retry khi mở app hoặc bấm retry tay). |
+| `404`, `5xx`, timeout, mất mạng | Chưa gửi xong → đưa vào hàng chờ retry riêng của destination đó (backoff lũy thừa; WorkManager chạy nền theo chuỗi one-time work, chu kỳ theo cài đặt tự gửi lại; hoặc bấm "Retry now" tay). |
 
 ## Thêm service mới trong 5 phút
 
 1. Mở app → màn hình **Services** → **Thêm service**.
 2. Điền `name` (đặt tên ngắn, vd `n8n`), `url`, `headerName` /
    `headerValue` (bỏ trống nếu endpoint public).
-3. `apps`: để trống nếu muốn nhận mọi app, hoặc nhập package/bundle id
+3. `apps`: để trống nếu muốn nhận mọi app, hoặc nhập package id
    của app nguồn (vd `com.vietcombank.vcb`).
-4. Bật `enabled`, lưu.
+4. Công tắc bật/tắt của service **mặc định TẮT** — bật lên thì mới
+   nhận notification thật, rồi lưu.
 5. Bấm **Gửi test** trên service vừa thêm → kiểm tra phía server đã
    nhận payload test chưa. Nếu nhận được: xong. Nếu lỗi: xem
    [docs/TROUBLESHOOTING.md](TROUBLESHOOTING.md) theo mã lỗi.
@@ -83,7 +85,7 @@ API này do task khác xây riêng; repo này chỉ gửi tới.
   "url": "https://mail.hmt9x.dev/api/ingest/notification",
   "headerName": "X-Api-Key",
   "headerValue": "DAN_KEY_CUA_BAN",
-  "enabled": true,
+  "enabled": false,
   "apps": []
 }
 ```
@@ -105,7 +107,7 @@ Endpoint tự viết, nhận raw JSON `notify-push/v1` rồi xử lý tùy ý
   "url": "https://example.com/hook",
   "headerName": "Authorization",
   "headerValue": "Bearer <redacted>",
-  "enabled": true,
+  "enabled": false,
   "apps": []
 }
 ```
@@ -126,14 +128,14 @@ Ví dụ này chỉ nhận notification từ Vietcombank.
   "url": "https://n8n.example.com/webhook/notify-push",
   "headerName": "",
   "headerValue": "",
-  "enabled": true,
+  "enabled": false,
   "apps": ["com.vietcombank.vcb"]
 }
 ```
 
 - n8n webhook mặc định không có auth — nếu bật auth trong n8n thì điền
   `headerName`/`headerValue` tương ứng.
-- Muốn nhận thêm app khác: thêm package/bundle id vào `apps`.
+- Muốn nhận thêm app khác: thêm package id vào `apps`.
   Muốn nhận mọi app: để `apps` là `[]`.
 - Trong n8n, payload vào ở dạng JSON — lấy text gốc từ `rawText`,
   đừng parse lại `title`/`body` rời rạc.

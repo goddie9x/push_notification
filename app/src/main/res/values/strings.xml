@@ -44,4 +44,20 @@
     <string name="clear_history">Clear history</string>
     <string name="clear_history_confirm">Clear all history? This cannot be undone.</string>
     <string name="history_cleared">History cleared</string>
+    <string name="settings">Cài đặt</string>
+    <string name="destination_not_enabled">Chưa bật</string>
+    <string name="destination_enabled_label">Đã bật</string>
+    <string name="destination_enable_label">Bật service này (mặc định: tắt — chỉ gửi khi bạn bật)</string>
+    <string name="settings_otp_title">Lọc mã OTP</string>
+    <string name="settings_otp_hint">Chặn thông báo chứa mã OTP / mã xác thực trước khi gửi</string>
+    <string name="settings_otp_warning">Cảnh báo: tắt bộ lọc này thì mã OTP cũng sẽ được gửi tới các service đã bật.</string>
+    <string name="settings_otp_patterns_label">Mẫu tự thêm (mỗi dòng một mẫu, không phân biệt hoa/thường)</string>
+    <string name="settings_otp_patterns_hint">khuyen mai</string>
+    <string name="settings_history_title">Lưu lịch sử</string>
+    <string name="settings_history_hint">Lưu các thông báo đã gửi / lỗi trên máy để kiểm tra lại</string>
+    <string name="settings_history_retention_label">Giữ lịch sử (ngày)</string>
+    <string name="settings_auto_retry_title">Tự gửi lại khi lỗi</string>
+    <string name="settings_auto_retry_hint">Tắt thì các lần gửi lỗi vẫn nằm trong hàng chờ cho tới khi bạn bấm “Retry now”</string>
+    <string name="settings_retry_interval_label">Gửi lại sau mỗi (phút)</string>
+    <string name="settings_saved">Đã lưu cài đặt</string>
 </resources>

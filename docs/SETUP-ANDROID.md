@@ -46,9 +46,11 @@ khác bình thường — chỉ không gửi được notification test cục b�
    - `url`: `https://mail.hmt9x.dev/api/ingest/notification`
    - `headerName`: `X-Api-Key`
    - `headerValue`: key `mt_...` của bạn (scope `ingest:write`)
-   - `enabled`: bật
    - `apps`: để trống (= nhận mọi app)
-3. Lưu → bấm **Gửi test** trên service đó → kiểm tra phía server đã
+3. **Bật service vừa thêm**: service mới mặc định TẮT — trong màn
+   hình Services, bật toggle của nó (dòng hết mờ, nhãn đổi thành
+   "Đã bật"). Chưa bật thì notification thật không được gửi tới.
+4. Lưu → bấm **Gửi test** trên service đó → kiểm tra phía server đã
    nhận payload chưa.
 
 ## 4. Luồng test
@@ -80,8 +82,10 @@ Màn hình **Services** → chọn service → **Gửi test**. Kết quả hiệ
 
 - Mất mạng / server `5xx` / timeout: payload vào **hàng chờ retry
   riêng của từng destination**, gửi lại tự động với backoff lũy thừa
-  (khoảng chờ tăng dần sau mỗi lần thất bại) qua WorkManager — kể cả khi
-  app đã đóng.
+  qua WorkManager (chuỗi one-time work, chu kỳ theo cài đặt — mặc định
+  15 phút) — kể cả khi app đã đóng. Tắt "Tự gửi lại khi lỗi" trong
+  **Cài đặt** thì hàng chờ chỉ chạy khi bấm **"Retry now"** trên màn
+  hình chính.
 - `401` / `422`: không retry tự động (xem bảng trong
   [DESTINATIONS](DESTINATIONS.md#ngữ-nghĩa-gửi--retry)).
 - Retry tay: màn hình **History** → entry lỗi → **Gửi lại**. Chỉ gửi lại
@@ -89,9 +93,22 @@ Màn hình **Services** → chọn service → **Gửi test**. Kết quả hiệ
 - Hàng chờ lưu trên máy; xóa app = mất hàng chờ. Gửi xong thì entry
   chuyển sang "đã gửi" trong History.
 
+## 6. Cài đặt trong app (màn hình Cài đặt)
+
+Mở từ màn hình chính → **Cài đặt**:
+
+- **Lọc mã OTP** (mặc định Bật): chặn thông báo chứa mã OTP / mã xác
+  thực trước khi gửi. Có thể thêm mẫu tự tạo, mỗi dòng một mẫu.
+  Tắt bộ lọc thì app hiện cảnh báo — mã OTP sẽ được gửi đi.
+- **Lưu lịch sử** (mặc định Bật, giữ 30 ngày): tắt thì không lưu gì
+  trên máy; chọn 7 / 30 / 90 ngày để giới hạn thời gian giữ.
+- **Tự gửi lại khi lỗi** (mặc định Bật, mỗi 15 phút): chọn chu kỳ
+  5 / 15 / 60 phút. Tắt thì hàng chờ chỉ chạy khi bấm "Retry now".
+
 ## Checklist
 
 - [ ] Notification access đã bật cho NotifyPush
 - [ ] POST_NOTIFICATIONS đã cho phép (để test cục bộ)
-- [ ] Ít nhất 1 destination đang `enabled`, test gửi thành công
+- [ ] Ít nhất 1 destination đã **bật** (không còn nhãn "Chưa bật"),
+  test gửi thành công
 - [ ] 1 giao dịch thật đã tới được server nhận

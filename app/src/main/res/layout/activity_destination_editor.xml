@@ -87,6 +87,14 @@
             android:hint="@string/destination_apps_hint"
             android:inputType="text" />
 
+        <Switch
+            android:id="@+id/destination_enabled_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:checked="false"
+            android:text="@string/destination_enable_label" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

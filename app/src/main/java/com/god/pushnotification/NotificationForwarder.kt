@@ -1,5 +1,6 @@
 package com.god.pushnotification
 
+import com.god.notifypush.AppSettings
 import com.god.notifypush.DispatchStatus
 import com.god.notifypush.Dispatcher
 import com.god.notifypush.HistoryEntry
@@ -14,7 +15,8 @@ class NotificationForwarder(
     private val dispatcher: Dispatcher,
     private val historyStore: HistoryStore,
     private val retryQueue: RetryQueue,
-    private val isOtp: (NotificationPayload) -> Boolean = OtpSkipFilter::shouldSkip
+    private val isOtp: suspend (NotificationPayload) -> Boolean =
+        { OtpSkipFilter(AppSettings()).shouldSkip(it) }
 ) {
 
     suspend fun forward(payload: NotificationPayload, packageName: String) {

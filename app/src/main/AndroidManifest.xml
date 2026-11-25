@@ -36,6 +36,10 @@
             android:name=".HistoryActivity"
             android:exported="false"
             android:label="@string/history" />
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:label="@string/settings" />
         <service
             android:name=".PushListenerService"
             android:exported="true"

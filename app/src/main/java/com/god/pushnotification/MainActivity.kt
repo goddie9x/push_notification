@@ -20,9 +20,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
@@ -58,7 +60,12 @@ class MainActivity : AppCompatActivity() {
         initPickers()
         initPosting()
         initNavigation()
-        RetryScheduler.schedulePeriodic(this)
+        lifecycleScope.launch(Dispatchers.IO) {
+            val settings = ServiceLocator.settingsStore(this@MainActivity).load()
+            withContext(Dispatchers.Main) {
+                RetryScheduler.ensureAutoRetryScheduled(this@MainActivity, settings)
+            }
+        }
     }
 
     override fun onResume() {
@@ -101,6 +108,9 @@ class MainActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.open_history).setOnClickListener {
             startActivity(Intent(this, HistoryActivity::class.java))
+        }
+        findViewById<Button>(R.id.open_settings).setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
         }
         findViewById<Button>(R.id.retry_now).setOnClickListener {
             RetryScheduler.retryNow(this)

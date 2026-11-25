@@ -1,6 +1,6 @@
 # Xử lý sự cố
 
-## 1. Listener không chạy (Android)
+## 1. Listener không chạy
 
 **Triệu chứng:** có notification mới nhưng History trong app trống trơn.
 
@@ -49,10 +49,10 @@
 
 - Đây là hành vi đúng: payload đã vào **hàng chờ retry riêng của
   destination** đó, sẽ gửi lại tự động với backoff lũy thừa.
-- Android: WorkManager gửi lại kể cả khi app đã đóng. Mở app → History
+- WorkManager gửi lại kể cả khi app đã đóng. Mở app → History
   sẽ hiện entry chuyển sang "đã gửi" sau khi retry thành công.
-- iOS: không có retry nền — mở app để app tự gửi lại hàng chờ, hoặc
-  bấm **Gửi lại** tay trong History.
+  Nếu đã tắt "Tự gửi lại khi lỗi" trong **Cài đặt** thì hàng chờ chỉ
+  chạy khi bạn bấm **"Retry now"** trên màn hình chính.
 - Nếu hàng chờ mãi không gửi được: kiểm tra mạng, kiểm tra URL
   destination còn đúng không, rồi bấm gửi lại tay 1 lần để xem mã lỗi
   mới nhất.
@@ -63,55 +63,15 @@
 
 Nguyên nhân thường gặp, theo thứ tự:
 
-1. **Automation iOS chạy trùng** (automation + chạy Shortcut tay cùng
-   lúc) — chỉ chạy một đường.
-2. **Retry sau khi server đã nhận nhưng response bị mất**: app không
+1. **Retry sau khi server đã nhận nhưng response bị mất**: app không
    nhận được `2xx` nên coi là chưa gửi và retry, trong khi server đã
    lưu. Phía server nên dedupe theo `(bundleId, receivedAt, rawText)`
    hoặc một idempotency key — đây là việc phía server, app không tự
    dedupe qua các lần chạy khác nhau.
-3. **Hai destination trỏ cùng một endpoint**: kiểm tra lại màn hình
+2. **Hai destination trỏ cùng một endpoint**: kiểm tra lại màn hình
    Services, tắt cái trùng.
 
-## 6. Automation không chạy (iOS)
-
-**Triệu chứng:** có notification ngân hàng nhưng Shortcut không chạy gì cả.
-
-Kiểm tra theo thứ tự — đây là các nguyên nhân hay gặp nhất:
-
-1. **Automation đang OFF?** Mở Shortcuts → tab **Automation** → mở
-   automation của app đó → toggle phải ở **ON**. Automation tạo/import
-   xong mặc định có thể OFF.
-2. **Thông báo của app nguồn đã bật đủ chưa?** Settings →
-   Notifications → [app] → bật Allow Notifications + cả 3 vị trí
-   **Lock Screen, Notification Center, Banners**. Chỉ bật Banners thì
-   trigger không bắt (thông báo phải vào được Notification Center).
-3. **App nguồn có đẩy push không?** Mở app nguồn → cài đặt trong app →
-   bật thông báo biến động số dư. Không có push thì không có gì để bắt.
-4. **Đúng app chưa?** Mỗi automation gắn với 1 app nguồn — notification
-   từ app khác không kích hoạt automation của app này.
-5. **Vừa cập nhật iOS / restore máy?** Kiểm tra lại toggle ON — iOS có
-   thể tắt automation sau cập nhật lớn.
-6. iOS dưới 27: không có trigger notification — chỉ chạy Shortcut tay.
-
-## 7. App iOS không nhận handoff
-
-**Triệu chứng:** Shortcut chạy nhưng app NotifyPush không mở / History
-không có entry mới.
-
-1. Kiểm tra app đã cài chưa, mở app tay 1 lần cho chắc.
-2. Kiểm tra URL scheme: Shortcut phải gọi
-   `pushnotification://ingest?payload=<JSON đã URL-encode>`. Sai scheme
-   hoặc payload chưa encode thì iOS không mở được app.
-3. Kiểm tra payload JSON có hợp lệ không (chạy Shortcut trong app
-   Shortcuts để xem lỗi từng action).
-4. Đường dự phòng: nếu handoff lỗi mà cần gửi gấp, bật chế độ POST trực
-   tiếp trong Shortcut (xem [SETUP-IOS](SETUP-IOS.md#4-url-scheme-handoff--shortcut-đưa-payload-cho-app))
-   — payload đi thẳng tới server, không qua History / RetryQueue của app.
-5. Ghi chú: tên action / field chính xác trong Shortcut do subagent iOS
-   chốt; nếu tài liệu này lệch với Shortcut thực tế thì Shortcut là đúng.
-
-## 8. Test notification không hiện (Android)
+## 6. Test notification không hiện
 
 - Kiểm tra quyền `POST_NOTIFICATIONS`: **Settings → Apps → NotifyPush
   → Notifications** → bật.

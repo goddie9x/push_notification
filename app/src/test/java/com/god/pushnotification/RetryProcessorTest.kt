@@ -1,5 +1,6 @@
 package com.god.pushnotification
 
+import com.god.notifypush.AppSettings
 import com.god.notifypush.DispatchResult
 import com.god.notifypush.DispatchStatus
 import com.god.notifypush.Dispatcher
@@ -119,5 +120,43 @@ class RetryProcessorTest {
 
         assertEquals(0, outcome.failedCount)
         verifyBlocking(dispatcher, never()) { dispatch(any()) }
+    }
+
+    @Test
+    fun autoRetryOffLeavesQueueUntouched() = runTest {
+        val queue = mock<RetryQueue>()
+        whenever(queue.pending()) doReturn listOf(queued())
+        val dispatcher = mock<Dispatcher>()
+        val processor = RetryProcessor(
+            queue,
+            dispatcher,
+            loadSettings = { AppSettings(autoRetryEnabled = false) },
+        )
+
+        val outcome = processor.processPending(now)
+
+        assertEquals(0, outcome.failedCount)
+        verifyBlocking(dispatcher, never()) { dispatch(any()) }
+        verifyBlocking(queue, never()) { remove(any()) }
+        verifyBlocking(queue, never()) { markAttempt(any(), any()) }
+    }
+
+    @Test
+    fun forcedRetryRunsEvenWhenAutoRetryOff() = runTest {
+        val queue = mock<RetryQueue>()
+        whenever(queue.pending()) doReturn listOf(queued())
+        val dispatcher = mock<Dispatcher>()
+        whenever(dispatcher.dispatch(any())) doReturn listOf(delivered())
+        val processor = RetryProcessor(
+            queue,
+            dispatcher,
+            loadSettings = { AppSettings(autoRetryEnabled = false) },
+        )
+
+        val outcome = processor.processPending(now, force = true)
+
+        assertEquals(0, outcome.failedCount)
+        verifyBlocking(dispatcher) { dispatch(any()) }
+        verifyBlocking(queue) { remove("q1") }
     }
 }

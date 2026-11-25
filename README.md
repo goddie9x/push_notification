@@ -1,20 +1,39 @@
-# NotifyPush — Generic Notification Forwarder (KMP v2.0.0)
+# NotifyPush — Generic Notification Forwarder (Android, KMP v2.0.0)
 
-NotifyPush nhận thông báo từ các app khác trên điện thoại và chuyển tiếp
-nguyên văn tới các dịch vụ do bạn cấu hình (mail tool, webhook, n8n, ...).
-Một payload JSON chung duy nhất — **không parse trong client**.
+NotifyPush nhận thông báo từ các app khác trên điện thoại Android và
+chuyển tiếp nguyên văn tới các dịch vụ do bạn cấu hình (mail tool,
+webhook, n8n, ...). Một payload JSON chung duy nhất — **không parse
+trong client**.
+
+> iOS đã bỏ theo quyết định 25/11 — có thể thêm lại sau.
 
 > **Trạng thái:** v2.0.0 đã build và test xanh trên VM ngày 25/11/2026
-> (`:shared:jvmTest` 34/34, `:app:testDebugUnitTest` 31/31,
-> `:app:assembleDebug` ra APK). Chỉ build iOS là chưa từng chạy (không có
-> macOS/Xcode trên VM — xem [Chưa được kiểm chứng](#chưa-được-kiểm-chứng)).
+> (xem [Chưa được kiểm chứng](#chưa-được-kiểm-chứng)).
+
+## Mặc định an toàn
+
+Mọi thứ nhạy cảm đều **tắt sẵn** cho tới khi bạn bật rõ ràng:
+
+- **Service mới thêm vào mặc định TẮT** (`enabled: false`). Service
+  chưa bật không nhận gì hết — kể cả khi bạn bấm "Gửi test" trên nó
+  thì test vẫn đi qua dispatcher (chỉ để kiểm tra kết nối), nhưng
+  notification thật thì không. Màn hình Services hiện rõ service nào
+  chưa bật: dòng mờ đi + nhãn **"Chưa bật"**. Muốn nhận thật thì bật
+  toggle của service đó.
+- **Lọc mã OTP mặc định BẬT** — thông báo chứa mã OTP / mã xác thực
+  không rời khỏi máy. Tắt trong màn hình **Cài đặt**, app cảnh báo rõ
+  là tắt thì mã OTP cũng sẽ được gửi đi.
+- **Lưu lịch sử mặc định BẬT**, giữ 30 ngày — tắt trong **Cài đặt** thì
+  không lưu gì trên máy.
+- **Tự gửi lại khi lỗi mặc định BẬT**, mỗi 15 phút — tắt trong
+  **Cài đặt** thì các lần gửi lỗi vẫn nằm trong hàng chờ cho tới khi
+  bạn bấm "Retry now" trên màn hình chính.
 
 ## App làm gì — và KHÔNG làm gì
 
 **Làm:**
 
-- Nhận thông báo từ app khác (Android: `NotificationListenerService`;
-  iOS: Shortcuts automation — xem bảng giới hạn bên dưới).
+- Nhận thông báo từ app khác qua `NotificationListenerService`.
 - Đóng gói thành một JSON chung duy nhất (schema `notify-push/v1`):
 
 ```json
@@ -26,33 +45,36 @@ Một payload JSON chung duy nhất — **không parse trong client**.
   "body": "TK 1234567890: +500.000 VND luc 10:23 25/11/2026. So du: 12.345.678 VND.",
   "receivedAt": "2026-11-25T10:23:00+07:00",
   "rawText": "Vietcombank\nTK 1234567890: +500.000 VND luc 10:23 25/11/2026. So du: 12.345.678 VND.",
-  "device": "<thiet-bi-gui>"
+  "device": "android"
 }
 ```
 
 | Field | Bắt buộc | Ghi chú |
 |---|---|---|
 | `sourceApp` | Có | Tên app hiển thị, vd `Vietcombank`. |
-| `bundleId` | Có (có thể `""`) | Bundle id / package name của app nguồn. Android: package name thật. iOS: Shortcut để `""` nếu không lấy được. |
+| `bundleId` | Có (có thể `""`) | Package name của app nguồn. |
 | `title` / `subtitle` / `body` | Có (có thể `""`) | Nội dung notification, giữ nguyên. |
 | `receivedAt` | Có | ISO-8601, thời điểm nhận trên máy. |
 | `rawText` | Có | `title + "\n" + subtitle + "\n" + body`, bỏ phần trống. **Đây là nguồn sự thật — server parse lại từ field này.** |
-| `device` | Có | String, `"android"` hoặc `"ios"` — thiết bị gửi payload. |
+| `device` | Có | String, `"android"` — thiết bị gửi payload. |
 
 - Fan-out tới **tất cả** destination đang bật, chạy song song; một
   destination lỗi không chặn các destination khác.
 - Hàng chờ retry riêng cho từng destination khi mất mạng / server lỗi
-  (backoff lũy thừa; Android dùng WorkManager, iOS retry tay + khi mở app).
+  (backoff lũy thừa; WorkManager chạy nền theo chuỗi one-time work,
+  vì PeriodicWorkRequest tối thiểu 15 phút nên không dùng được cho
+  chu kỳ 5 phút).
 - Lọc bỏ thông báo chứa mã OTP / mã xác thực trước khi gửi
-  (mặc định BẬT, cấu hình được). Xem [docs/PRIVACY.md](docs/PRIVACY.md).
-- Lưu lịch sử đã gửi / đang chờ / lỗi trên máy để kiểm tra lại.
+  (mặc định BẬT, cấu hình được trong màn hình **Cài đặt**).
+  Xem [docs/PRIVACY.md](docs/PRIVACY.md).
+- Lưu lịch sử đã gửi / đang chờ / lỗi trên máy để kiểm tra lại
+  (mặc định BẬT, giữ 30 ngày, cấu hình được trong **Cài đặt**).
 
 **KHÔNG làm (rõ ràng, theo thiết kế):**
 
 - **Không parse nội dung trong client.** Không tách số tiền, số dư, tên
   ngân hàng, không nhận diện ngân hàng. Việc parse thuộc về từng server
-  nhận (vd mail tool parse từ `rawText`). Repo Shortcut v1 cũ có parse
-  phía client (`clientParsed`) — v2 **bỏ hẳn theo thiết kế**.
+  nhận (vd mail tool parse từ `rawText`).
 - Không đọc tin nhắn SMS, email, hay nội dung trong app nguồn — chỉ đọc
   text của notification đã hiển thị.
 - Không gửi gì đi nếu không có destination nào đang bật.
@@ -63,47 +85,41 @@ Một payload JSON chung duy nhất — **không parse trong client**.
 
 ```
                 ┌────────────────────────────────────────────┐
-                │  shared (KMP, :shared)                    │
+                │  shared (KMP, :shared — android + jvm)    │
                 │  NotificationPayload · Destination        │
                 │  Dispatcher (fan-out song song)           │
-                │  RetryQueue · OtpSkipFilter               │
+                │  RetryQueue · OtpSkipFilter · AppSettings │
                 │  TestPayloadBuilder · HistoryStore        │
-                └──────────────┬─────────────┬───────────────┘
-                               │             │
-        ┌──────────────────────┘             └──────────────────────┐
-        │ Android (:app, Kotlin, Views XML)  │ iOS (iosApp/, SwiftUI)│
-        │ MainActivity · PushListenerService │ 3 màn hình tương tự   │
-        │ Services · History · RetryWorker   │ URL scheme / App Intent│
-        └──────────────────────┘             └──────────────────────┘
-   Capture: NotificationListenerService       Capture: iOS 27 Shortcuts
-   (đọc notification trực tiếp)               automation → pushnotification://ingest
+                └──────────────────────┬─────────────────────┘
+                                       │
+        ┌──────────────────────────────┘
+        │ Android (:app, Kotlin, Views XML)
+        │ MainActivity · PushListenerService
+        │ Services · History · Settings · RetryWorker
+        └──────────────────────────────┘
+   Capture: NotificationListenerService
+   (đọc notification trực tiếp)
 ```
 
-- Shared code giống hệt nhau trên 2 nền tảng; **chỉ đường capture khác nhau**.
 - Android app viết bằng Kotlin, giao diện Views XML — **không dùng Compose**.
-- iOS app dùng SwiftUI, gọi shared framework đã biên dịch.
-
-## Giới hạn nền tảng — nói thật
-
-| | Android | iOS |
-|---|---|---|
-| Đọc notification app khác | **Được**, qua `NotificationListenerService` (cần user cấp quyền trong Settings) | **Không được.** Không app bên thứ ba nào đọc được notification của app khác trên iOS — Kotlin hay Swift đều vậy. Đây là giới hạn của iOS, không phải của app. |
-| Đường capture | Service chạy nền, tự động | iOS 27 Shortcuts automation "When I receive a notification from [app]" → đưa payload cho app NotifyPush qua App Intent / URL scheme `pushnotification://ingest` → app dispatch qua shared dispatcher |
-| Cần làm tay | Cấp quyền 1 lần | **1 automation cho mỗi app nguồn**; iOS dưới 27 không có trigger này, chỉ chạy Shortcut tay |
-| Retry nền | WorkManager | Retry tay + khi mở app (iOS không cho chạy nền tự do) |
+- Module `:shared` giữ dạng KMP (android + jvm) để test đơn vị chạy
+  được trên VM; target jvm chỉ phục vụ test, không phải app riêng.
 
 ## Cài đặt
 
 - Android: [docs/SETUP-ANDROID.md](docs/SETUP-ANDROID.md)
-- iOS: [docs/SETUP-IOS.md](docs/SETUP-IOS.md)
 - Thêm / sửa destination: [docs/DESTINATIONS.md](docs/DESTINATIONS.md)
 
 ## Cấu hình Services — 3 ví dụ
 
 Mỗi destination gồm: `name`, `url`, `headerName` + `headerValue`,
-`enabled`, `apps` (danh sách app nguồn được phép; rỗng = tất cả),
-`skipPatterns` (mẫu text bỏ qua). Chi tiết đầy đủ + cách thêm service
-mới trong 5 phút: [docs/DESTINATIONS.md](docs/DESTINATIONS.md).
+`enabled`, `apps` (danh sách app nguồn được phép; rỗng = tất cả).
+Chi tiết đầy đủ + cách thêm service mới trong 5 phút:
+[docs/DESTINATIONS.md](docs/DESTINATIONS.md).
+
+**Lưu ý:** các ví dụ dưới đây để `enabled: false` theo mặc định an
+toàn — sau khi thêm service, bạn phải bật toggle của nó trong màn
+hình Services thì notification thật mới được gửi tới.
 
 **1. Mail tool (destination đầu tiên)** — server tự parse từ `rawText`:
 
@@ -113,7 +129,7 @@ mới trong 5 phút: [docs/DESTINATIONS.md](docs/DESTINATIONS.md).
   "url": "https://mail.hmt9x.dev/api/ingest/notification",
   "headerName": "X-Api-Key",
   "headerValue": "DAN_KEY_CUA_BAN",
-  "enabled": true,
+  "enabled": false,
   "apps": []
 }
 ```
@@ -130,7 +146,7 @@ làm việc phía server. `2xx` / `422` đều tính là đã gửi xong (422 = 
   "url": "https://example.com/hook",
   "headerName": "Authorization",
   "headerValue": "Bearer <redacted>",
-  "enabled": true,
+  "enabled": false,
   "apps": []
 }
 ```
@@ -143,13 +159,27 @@ làm việc phía server. `2xx` / `422` đều tính là đã gửi xong (422 = 
   "url": "https://n8n.example.com/webhook/notify-push",
   "headerName": "",
   "headerValue": "",
-  "enabled": true,
+  "enabled": false,
   "apps": ["com.vietcombank.vcb"]
 }
 ```
 
 `apps` ở ví dụ 3 chỉ nhận notification từ Vietcombank; 2 ví dụ trên
 nhận từ mọi app (`apps` rỗng).
+
+## Cài đặt trong app (màn hình Cài đặt)
+
+Mở từ màn hình chính → **Cài đặt**. Tất cả lưu trên máy
+(`settings.json`), mặc định như sau:
+
+| Cài đặt | Mặc định | Lựa chọn |
+|---|---|---|
+| Lọc mã OTP | Bật | Tắt thì mã OTP cũng được gửi đi (app hiện cảnh báo) |
+| Mẫu OTP tự thêm | (trống) | Mỗi dòng một mẫu, không phân biệt hoa/thường; mẫu sai cú pháp regex bị bỏ qua |
+| Lưu lịch sử | Bật | Tắt thì không lưu gì trên máy |
+| Giữ lịch sử | 30 ngày | 7 / 30 / 90 ngày — entry cũ hơn bị xóa khi đọc/ghi |
+| Tự gửi lại khi lỗi | Bật | Tắt thì hàng chờ chỉ chạy khi bấm "Retry now" |
+| Chu kỳ gửi lại | 15 phút | 5 / 15 / 60 phút |
 
 ## Luồng test
 
@@ -163,10 +193,10 @@ nhận từ mọi app (`apps` rỗng).
    `401` = sai key, `422` = server nhận nhưng không parse được — cả hai
    đều không retry, xem [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
 3. **End-to-end với notification ngân hàng thật**: bật capture theo
-   [SETUP-ANDROID](docs/SETUP-ANDROID.md) / [SETUP-IOS](docs/SETUP-IOS.md),
-   thực hiện một giao dịch nhỏ → kiểm tra History trong app và phía
-   server nhận. OTP / mã xác thực sẽ **không** tới server (bộ lọc mặc
-   định) — đừng dùng giao dịch OTP để test end-to-end.
+   [SETUP-ANDROID](docs/SETUP-ANDROID.md), thêm service rồi **bật
+   toggle của nó**, thực hiện một giao dịch nhỏ → kiểm tra History
+   trong app và phía server nhận. OTP / mã xác thực sẽ **không** tới
+   server (bộ lọc mặc định) — đừng dùng giao dịch OTP để test end-to-end.
 
 ## Build
 
@@ -193,45 +223,34 @@ source ~/workspace/tools/android-env.sh
 
 APK ở `app/build/outputs/apk/debug/`.
 
-### iOS (chỉ Mac + Xcode)
-
-- Mở `iosApp/` bằng Xcode trên máy Mac, build shared framework rồi
-  chạy app. **Không build được trên VM Linux này (không có macOS/Xcode)
-  — đừng claim build iOS đã được verify ở đây.**
-- Cần Xcode + iOS 27 (cho Shortcuts Notification automation) trên máy test.
-
 ## Quyền riêng tư
 
 - API key chỉ lưu trên thiết bị, không commit vào repo, không gửi đi đâu
   ngoài chính destination đó. Xem [docs/PRIVACY.md](docs/PRIVACY.md).
-- OTP / mã xác thực không bao giờ được forward (bộ lọc mặc định BẬT).
+- OTP / mã xác thực không được forward khi bộ lọc đang BẬT (mặc định).
 - Không analytics, không bên thứ ba, không tài khoản.
 
 ## Xử lý sự cố
 
 [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) — listener không chạy,
-401/422, hàng chờ offline, gửi trùng, automation iOS không chạy, app iOS
-không nhận handoff.
+401/422, hàng chờ offline, gửi trùng.
 
 ## Chưa được kiểm chứng
 
 Những điều **chưa xác nhận được** (không có môi trường để kiểm chứng):
 
-- **Build iOS chưa từng được verify** — không có macOS/Xcode trên VM này.
-  Lần build đầu tiên phải chạy trên Mac sau khi link framework
-  `NotifyPushShared` (xem `iosApp/KMP-INTEGRATION.md`).
-- **File `.shortcut` và Shortcut iOS chưa từng test trên iPhone thật** —
-  plist đọc được, khớp `actions.json`, nhưng import/chạy thực tế cần bro test.
 - **Endpoint mail tool** `https://mail.hmt9x.dev/api/ingest/notification`
   do task khác xây — chưa verify live từ repo này.
+- **Chạy thật trên điện thoại** — test trên VM chỉ chạy test đơn vị +
+  build APK, chưa cài chạy trên máy thật (listener, WorkManager, màn
+  hình Cài đặt/Services cần kiểm tay trên điện thoại).
 
-Đã kiểm chứng ngày 25/11/2026 trên VM: `:shared:jvmTest` 34/34,
-`:app:testDebugUnitTest` 31/31, `:app:assembleDebug` ra APK `app-debug.apk`
-(versionName `2.0.0`). Tên class/màn hình/framework đã đối chiếu với code:
+Đã kiểm chứng ngày 25/11/2026 trên VM: `:shared:jvmTest` 49/49,
+`:app:testDebugUnitTest` 34/34, `:app:assembleDebug` ra APK `app-debug.apk`
+(versionName `2.0.0`). Tên class/màn hình đã đối chiếu với code:
 `NotificationPayload`, `Dispatcher` (+ `createDispatcher`),
 `PushListenerService`, `RetryWorker`, `ServicesActivity`, `HistoryActivity`,
-framework iOS `NotifyPushShared`; màn hình iOS `ServicesView`, `TestView`,
-`HistoryView` (+ `HistoryDetailView`).
+`SettingsActivity`, `AppSettings` (+ `SettingsStore`).
 
 ### Stack v2 (đã có trong repo)
 
@@ -239,11 +258,10 @@ framework iOS `NotifyPushShared`; màn hình iOS `ServicesView`, `TestView`,
   kotlinx-serialization `1.7.3`, kotlinx-datetime `0.6.1`,
   kotlinx-coroutines `1.9.0`; `compileSdk`/`targetSdk` `35`, `minSdk` `24`,
   `versionName "2.0.0"`, package `com.god.pushnotification`.
-- Module `:shared` (KMP: android + ios + jvm), module `:app` (Android, Kotlin,
-  Views XML), `iosApp/` (Xcode, SwiftUI), `ios-shortcut/` (NotifyPush shortcut
-  generic), `docs/` (SETUP-ANDROID, SETUP-IOS, DESTINATIONS, PRIVACY,
+- Module `:shared` (KMP: android + jvm), module `:app` (Android, Kotlin,
+  Views XML), `docs/` (SETUP-ANDROID, DESTINATIONS, PRIVACY,
   TROUBLESHOOTING).
 - `MainActivity` đã sang Kotlin, bug `Thread.sleep` trên UI thread đã sửa bằng
   coroutines (kèm nút Cancel + tiến độ); có `NotificationListenerService`,
-  cấu hình destination, History, retry (WorkManager Android / thủ công +
-  lúc mở app trên iOS).
+  cấu hình destination, History, Cài đặt, retry (WorkManager chuỗi
+  one-time work + retry tay).

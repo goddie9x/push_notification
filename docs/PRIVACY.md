@@ -3,7 +3,7 @@
 ## Cái gì rời khỏi thiết bị
 
 Chỉ có **payload JSON `notify-push/v1`** rời khỏi thiết bị — và chỉ tới
-các destination **bạn tự cấu hình** trong màn hình Services:
+các destination **đang bật** mà bạn tự cấu hình trong màn hình Services:
 
 ```json
 {
@@ -27,7 +27,7 @@ Không có gì khác rời khỏi thiết bị:
 - Dữ liệu trên máy (cấu hình destination, History, hàng chờ retry) chỉ
   nằm trên máy — xóa app là mất.
 
-## OTP / mã xác thực không bao giờ được forward
+## OTP / mã xác thực không được forward khi bộ lọc đang bật
 
 Bộ lọc `OtpSkipFilter` chạy **trước khi gửi**, trên `rawText`
 (title + subtitle + body). Notification nào chứa một trong các mẫu sau
@@ -39,7 +39,8 @@ verification code, security code, mã code,
 your code is, mã của bạn
 ```
 
-- Bộ lọc **mặc định BẬT**. Tắt/bật và sửa danh sách trong màn hình Services.
+- Bộ lọc **mặc định BẬT**. Tắt/bật và thêm mẫu tự tạo trong màn hình
+  **Cài đặt** (mở từ màn hình chính).
 - Tắt bộ lọc là tự chịu rủi ro: mã OTP sẽ đi thẳng tới server bạn cấu hình.
 - Lưu ý giới hạn: bộ lọc chỉ bắt được mẫu text đã biết. Một mã xác thực
   viết theo cách lạ (không chứa các mẫu trên) có thể lọt qua — nếu
@@ -59,8 +60,7 @@ your code is, mã của bạn
 ## App đọc được gì — và không đọc gì
 
 - App chỉ đọc **text của notification đã hiển thị** từ các app nguồn
-  (Android: qua `NotificationListenerService`; iOS: qua Shortcuts
-  automation bạn tự tạo).
+  (qua `NotificationListenerService`).
 - App **không** đọc SMS, email, nội dung trong app nguồn, danh bạ, vị trí,
   ảnh, hay bất cứ dữ liệu nào khác.
 - App **không parse** nội dung notification: không tách số tiền, số dư,
@@ -71,6 +71,6 @@ your code is, mã của bạn
 
 - Tắt 1 destination: màn hình Services → tắt `enabled`. App dừng gửi
   tới đó ngay; hàng chờ của destination đó không gửi nữa.
-- Dừng hẳn: tắt Notification access (Android) / tắt automation
-  (iOS) → app không nhận thêm notification nào.
+- Dừng hẳn: tắt Notification access → app không nhận thêm
+  notification nào.
 - Xóa dữ liệu: xóa app — cấu hình, key, History, hàng chờ đều mất theo.

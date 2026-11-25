@@ -19,6 +19,7 @@ class DestinationAdapter(
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.destination_name)
         val url: TextView = view.findViewById(R.id.destination_url)
+        val status: TextView = view.findViewById(R.id.destination_status)
         val apps: TextView = view.findViewById(R.id.destination_apps)
         val enabled: Switch = view.findViewById(R.id.destination_enabled)
         val sendTest: Button = view.findViewById(R.id.destination_send_test)
@@ -34,6 +35,11 @@ class DestinationAdapter(
         val destination = destinations[position]
         holder.name.text = destination.name
         holder.url.text = destination.url
+        holder.status.text = holder.itemView.context.getString(
+            if (destination.enabled) R.string.destination_enabled_label
+            else R.string.destination_not_enabled
+        )
+        holder.itemView.alpha = if (destination.enabled) 1f else 0.45f
         holder.apps.text = holder.itemView.context.getString(
             R.string.destination_apps,
             DestinationForm.formatAppsFilter(destination.appsFilter).ifEmpty {
