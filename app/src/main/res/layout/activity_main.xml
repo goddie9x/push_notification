@@ -1,92 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="10dp"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginBottom="10dp"
-        android:padding="10dp"
-        android:text="@string/notification_title" />
-
-    <EditText
-        android:id="@+id/notification_title"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginBottom="10dp"
-        android:padding="10dp"
-        android:text="@string/notification_title" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginBottom="10dp"
-        android:padding="10dp"
-        android:text="@string/notification_body" />
-
-    <EditText
-        android:id="@+id/notification_body"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginBottom="10dp"
-        android:padding="10dp"
-        android:text="@string/notification_body" />
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:padding="10dp">
 
         <TextView
-            android:layout_width="150dp"
+            android:layout_width="match_parent"
             android:layout_height="50dp"
+            android:layout_marginBottom="10dp"
             android:padding="10dp"
-            android:text="@string/amount_notification" />
+            android:text="@string/notification_title" />
 
-        <NumberPicker
-            android:id="@+id/amount_notification"
-            android:layout_width="150dp"
-            android:layout_height="80dp"
-            android:textAlignment="textStart" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="150dp"
+        <EditText
+            android:id="@+id/notification_title"
+            android:layout_width="match_parent"
             android:layout_height="50dp"
+            android:layout_marginBottom="10dp"
             android:padding="10dp"
-            android:text="Time interval" />
+            android:text="@string/notification_title" />
 
-        <NumberPicker
-            android:id="@+id/time_push_notification_interval"
-            android:layout_width="150dp"
-            android:layout_height="80dp"
-            android:textAlignment="textStart" />
         <TextView
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginBottom="10dp"
+            android:padding="10dp"
+            android:text="@string/notification_body" />
+
+        <EditText
+            android:id="@+id/notification_body"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginBottom="10dp"
+            android:padding="10dp"
+            android:text="@string/notification_body" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="150dp"
+                android:layout_height="50dp"
+                android:padding="10dp"
+                android:text="@string/amount_notification" />
+
+            <NumberPicker
+                android:id="@+id/amount_notification"
+                android:layout_width="150dp"
+                android:layout_height="80dp"
+                android:textAlignment="textStart" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="150dp"
+                android:layout_height="50dp"
+                android:padding="10dp"
+                android:text="Time interval" />
+
+            <NumberPicker
+                android:id="@+id/time_push_notification_interval"
+                android:layout_width="150dp"
+                android:layout_height="80dp"
+                android:textAlignment="textStart" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:padding="10dp"
+                android:text="@string/ms" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/push_notification"
             android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:padding="10dp"
-            android:text="@string/ms" />
-    </LinearLayout>
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="@string/push_notification" />
 
-    <Button
-        android:id="@+id/push_notification"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/push_notification" />
-</LinearLayout>
+        <Button
+            android:id="@+id/cancel_posting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="@string/cancel"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/posting_progress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:padding="10dp" />
+
+        <TextView
+            android:id="@+id/listener_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:padding="10dp"
+            android:text="@string/listener_disabled" />
+
+        <Button
+            android:id="@+id/open_listener_settings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="@string/open_listener_settings" />
+
+        <Button
+            android:id="@+id/open_services"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="@string/services" />
+
+        <Button
+            android:id="@+id/open_history"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="@string/history" />
+
+        <Button
+            android:id="@+id/retry_now"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/retry_now" />
+
+    </LinearLayout>
+</ScrollView>
