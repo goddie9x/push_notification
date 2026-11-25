@@ -14,8 +14,7 @@ import kotlinx.coroutines.coroutineScope
 class Dispatcher(
     private val httpClient: HttpClient,
     private val store: DestinationStore,
-) {
-    suspend fun dispatch(payload: NotificationPayload): List<DispatchResult> {
+) {    suspend fun dispatch(payload: NotificationPayload): List<DispatchResult> {
         val destinations = store.load()
             .filter { it.enabled && it.matches(payload.bundleId, payload.sourceApp) }
         return coroutineScope {
@@ -45,3 +44,6 @@ class Dispatcher(
         }
     }
 }
+
+fun createDispatcher(store: DestinationStore): Dispatcher =
+    Dispatcher(httpClientFactory(), store)

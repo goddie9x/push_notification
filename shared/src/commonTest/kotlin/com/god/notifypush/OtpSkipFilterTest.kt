@@ -31,8 +31,22 @@ class OtpSkipFilterTest {
     }
 
     @Test
-    fun bareSixDigitCodeIsSkipped() {
-        assertTrue(OtpSkipFilter.shouldSkip(payload("App", "Your code is 123456")))
+    fun vietnameseConfirmationCodeIsSkipped() {
+        assertTrue(OtpSkipFilter.shouldSkip(payload("App", "Ma xac nhan cua ban: 123456")))
+    }
+
+    @Test
+    fun bareCodeWithoutOtpMarkerIsNotSkipped() {
+        assertFalse(OtpSkipFilter.shouldSkip(payload("App", "Your code is 123456")))
+    }
+
+    @Test
+    fun sixDigitReferenceIsNotSkipped() {
+        assertFalse(
+            OtpSkipFilter.shouldSkip(
+                payload("App", "Giao dich thanh cong. Ma tham chieu: 123456"),
+            ),
+        )
     }
 
     @Test

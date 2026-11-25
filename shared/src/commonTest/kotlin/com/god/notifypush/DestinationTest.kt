@@ -32,4 +32,15 @@ class DestinationTest {
     fun filterRejectsUnlistedApp() {
         assertFalse(destination.matches("com.other.app", "Other App"))
     }
+
+    @Test
+    fun matchingIsCaseInsensitive() {
+        assertTrue(destination.matches("com.other.app", "mb bank"))
+        assertTrue(destination.matches("COM.VIETCOMBANK.VCB", "Something Else"))
+    }
+
+    @Test
+    fun unknownAppIsMatched() {
+        assertTrue(destination.matches("", ""))
+    }
 }

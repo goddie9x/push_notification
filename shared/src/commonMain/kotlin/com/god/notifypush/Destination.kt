@@ -14,6 +14,9 @@ data class Destination(
 ) {
     fun matches(bundleId: String, appName: String): Boolean {
         if (appsFilter.isEmpty()) return true
-        return appsFilter.any { it == bundleId || it == appName }
+        if (bundleId.isBlank() && appName.isBlank()) return true
+        return appsFilter.any {
+            it.equals(bundleId, ignoreCase = true) || it.equals(appName, ignoreCase = true)
+        }
     }
 }
